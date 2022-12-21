@@ -1,1 +1,1 @@
-# SRP
+# SRP - RSA encryption
