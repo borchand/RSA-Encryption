@@ -1,147 +1,115 @@
 import math as m
 import numpy as np
-import math
+import random as r
 
-def check_prime(n : int):
-    """
-    Check if a number is prime or not
-    """
-    
-    if n == 2:
-        return True
-    
-    if n <= 1  or n % 2 == 0:
-        return False
+class RSA:
+    def __init__(self, min:int = 10, max:int = 100):
 
-    for i in range(3, m.ceil(m.sqrt(n)) + 1, 2):
-        if n % i == 0:
+        self.d_calc = lambda : m.fmod(m.fmod(self.e, self.k) * m.fmod(self.d, self.k), self.k)
+        self.encrypt_letter = lambda letter_as_num: np.mod(pow(letter_as_num, self.e), self.n)
+        self.decrypt_letter = lambda encrypted_letter: np.mod(pow(int(encrypted_letter), int(self.d)), self.n)
+        self.min = min
+        self.max = max
+
+        self.create_keys()
+    
+    def check_prime(self, n : int):
+        """
+        Check if a number is prime or not
+        """
+        
+        if n == 2:
+            return True
+        
+        if n <= 1  or n % 2 == 0:
             return False
+
+        for i in range(3, m.ceil(m.sqrt(n)) + 1, 2):
+            if n % i == 0:
+                return False
+            
+        return True
+
+    def find_primes(self, min:int, max:int):
+        """
+        Return a list of prime numbers between min and max
+        """
         
-    return True
-
-def find_primes(min : int, max : int):
-    """
-    Return a list of prime numbers between min and max
-    """
+        return [i for i in range(min, max+1) if self.check_prime(i)]
     
-    return [i for i in range(min, max) if check_prime(i)]
-
-def determine_e(k, n):
-    """
-    Determine e
-    """
-    primes = find_primes(3, n)
-    
-    for i in primes:
-        if m.gcd(i, k) == 1:
-            return i
-
-def find_d(e, k):
-    """
-    Find d
-    """
-    
-    i = 0
-    d = round((1 + i * k) / e)
-
-    while m.fmod(m.fmod(e,k)*m.fmod(d,k),k) != 1:
-        i += 1
-        d = round((1 + i * k) / e)
-    return d
-    
-def create_keys(min : int, max : int):
-    
-    primes = find_primes(min, max)
-    
-    p = primes.pop()
-    q = primes.pop()
-
-    print("p", p, "q", q)
-    k = (p - 1) * (q - 1)
-    
-    e = determine_e(k, min)
-
-    d = find_d(e, k)
-
-    return d, e, k
-
-def encrypt(mes : str, min : int, max : int):
-    """
-    Encrypt a message
-    """
-    
-    d, e, k = create_keys(min, max)
-    
-    num_mes = []
-    for i in mes.lower():
-        if ord(i) == 32: # space
-            num_mes.append('32')
-        elif ord(i) < 96 or ord(i) > 96 + 26: # special characters
-            num_mes.append(99)
-        else: # letters
-            word_num = ord(i) - 96
-            if word_num  < 10:
-                num_mes.append('0' + str(word_num))
-            else:
-                num_mes.append(word_num)
-    
-    if len(num_mes) % 2 != 0:
-        num_mes.append('32')
+    def determine_e(self):
+        """
+        Determine e
+        """
+        primes = self.find_primes(3, self.n)
         
-    encrypted = []
+        for i in primes:
+            if m.gcd(i, self.k) == 1:
+                self.e = i
+                return self.e
 
-    for i in range(0, len(num_mes), 2):
-        m = str(num_mes[i]) + str(num_mes[i+1])
-        encrypted_m = np.power(int(m), e) % k
-        encrypted.append(encrypted_m)
+    def find_d(self):
+        """
+        Find d
+        """
+        i = 0
+        self.d = round((1 + i * self.k) / self.e)
+
+        while self.d_calc() != 1:
+            i += 1
+            self.d = round((1 + i * self.k) / self.e)
+
+    def selected_primes(self):
+        return self.p, self.q
+
+    def create_keys(self):
+    
+        primes = self.find_primes(self.min, self.max)
         
-    return encrypted, d, e, k
-   
-def decrypt(encrypted, d, n):
-    """
-    Decrypt a message
-    """
-    
-    decrypted = ""
-    for i in encrypted:
-        print(i)
-        decrypted_m = np.mod(np.power(int(i), d),n)
-        if decrypted_m < 1000:
-            decrypted_m = '0' + str(decrypted_m)
-        # split the decrypted message into two parts
-        print(decrypted_m)
-        decrypted_m1 = int(str(decrypted_m)[:2])
-        decrypted_m2 = int(str(decrypted_m)[2:])
-        print(decrypted_m1, decrypted_m2)
-        print(decrypt_letter(decrypted_m1), decrypt_letter(decrypted_m2))
-        decrypted += decrypt_letter(decrypted_m1) + decrypt_letter(decrypted_m2)
+
+        self.p = primes.pop(r.randint(0, len(primes)-1))
+        self.q = primes.pop(r.randint(0, len(primes)-1))
+
+        self.k = (self.p - 1) * (self.q - 1)
+
+        self.n = self.p * self.q
+        self.determine_e()
+        self.find_d()
+
+    def encrypt(self, mes : str):
+        """
+        Encrypt a message
+        """
+
+        encrypted_mes = []
+        for letter in mes.lower():
+            letter_as_num = ord(letter)
+            encrypted_letter = self.encrypt_letter(letter_as_num)
+            encrypted_mes.append(encrypted_letter)
         
-    return decrypted
+        self.encrypted_mes = encrypted_mes
 
-def decrypt_letter(num_letter):
-    if num_letter == 32: # space
-        return ' '
-    elif num_letter == 99: # special characters
-        return '#'
-    else: # letters
-        return chr(num_letter + 96)
-def main():
-
-    mes = 'hello world'
-    print(mes)
+        return self.encrypted_mes
     
-    encrypted, d, e, n = encrypt(mes, 10, 100)
+    def decrypt(self):
+        """
+        Decrypt a message
+        """
 
-    
-    decrypted = decrypt(encrypted, d, n)
-    print(decrypted)
-    # print("e", e, "d", d, "n", n)
-    # me = np.mod(np.power(4, e), n)
+        self.decrypted = ""
 
-    # print(me)
+        for encrypted_letter in self.encrypted_mes:
 
-    # print(me**d)
-    return
+            decrypt_chunk = self.decrypt_letter(encrypted_letter)
+            self.decrypted += chr(decrypt_chunk)
+        
+        return self.decrypted
 
 if __name__ == "__main__":
-    main()
+    rsa = RSA(100, 200)
+    print("Selected primes:", rsa.selected_primes())
+
+    mes = "hello world!"
+    print("Message:", mes)
+    print("Encrypted message:", rsa.encrypt(mes))
+    print("Decrypted message:", rsa.decrypt())
