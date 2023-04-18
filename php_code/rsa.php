@@ -150,8 +150,8 @@
     // Den oprindelige besked, den krypteret besked og nøglerne sendes tilbage.
     return array($besked , $k_bes , $d , $e , $n);
     }
-    // dekrypter() dekrypterer en besked, $bes, ved hjælpe af nøglerne $d
-    og $n.
+    
+    // dekrypter() dekrypterer en besked, $bes, ved hjælpe af nøglerne $d og $n.
     function dekrypter($bes , $d, $n){
     // Tallene splittes op i deres blokke i en liste.
     $bes = explode("␣", $bes);
@@ -159,7 +159,7 @@
     for($i=0; $i < count($bes); $i++){
     $m = bcmod(bcpow($bes[$i],$d),$n);
     // Er tallet under 1000 tilføjes et 0 foran tallet, for at sikre hver
-    blok er på fire cifre og at det kan skrives om til tegn igen.
+    // blok er på fire cifre og at det kan skrives om til tegn igen.
     if($m < 1000) {
     $m = "0".$m;
     }
