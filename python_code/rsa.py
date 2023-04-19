@@ -1,6 +1,7 @@
 import math as m
 import numpy as np
 import random as r
+import utils
 
 # The RSA class is a Python implementation of the RSA encryption algorithm, which generates public and
 # private keys for encrypting and decrypting messages.
@@ -26,20 +27,8 @@ class RSA:
         :type n: int
         """
 
-        # `self.d_calc` is a lambda function that calculates the value of `(e*d) mod k`, where `e` and
-        # `d` are the public and private keys respectively, and `k` is the totient of `n`. This value
-        # is used in the process of finding the private key `d`.
-        self.d_calc = lambda : m.fmod(m.fmod(self.e, self.k) * m.fmod(self.d, self.k), self.k)
-        # `self.encrypt_letter` is a lambda function that takes in a letter represented as a number
-        # (ASCII code) and encrypts it using the RSA algorithm. It does this by raising the letter to
-        # the power of the public key `e` and taking the modulus of the result with `n`. The resulting
-        # value is the encrypted letter.
-        self.encrypt_letter = lambda letter_as_num: np.mod(pow(letter_as_num, self.e), self.n)
-        # `self.decrypt_letter` is a lambda function that takes in an encrypted letter (represented as
-        # a number) and decrypts it using the RSA algorithm. It does this by raising the encrypted
-        # letter to the power of the private key `d` and taking the modulus of the result with `n`.
-        # The resulting value is the decrypted letter (represented as a number).
-        self.decrypt_letter = lambda encrypted_letter: np.mod(pow(int(encrypted_letter), int(self.d)), self.n)
+        self.encrypt_letter = lambda letter_as_num:  utils.encrypt_letter(letter_as_num, self.e, self.n)
+        self.decrypt_letter = lambda encrypted_letter: utils.decrypt_letter(encrypted_letter, self.d, self.n)
         
         self.min = min
         self.max = max
@@ -112,15 +101,12 @@ class RSA:
 
     def find_d(self):
         """
-        This function finds the value of d by iterating through a formula until a certain condition is met.
+        This function finds the value of 'd' using the 'k' and 'e' values.
+        :return: The function `find_d` is returning the value of `self.d`.
         """
 
-        i = 0
-        self.d = round((1 + i * self.k) / self.e)
-
-        while self.d_calc() != 1:
-            i += 1
-            self.d = round((1 + i * self.k) / self.e)
+        self.d = utils.find_d(self.k, self.e)
+        return self.d
 
     def create_keys(self):
         """
@@ -201,7 +187,7 @@ if __name__ == "__main__":
     # encrypts the message "hello world!" using the generated public key and prints the encrypted
     # message. It then decrypts the encrypted message using the generated private key and prints the
     # decrypted message.
-    rsa = RSA(100, 200)
+    rsa = RSA(100, 300)
 
     keys = rsa.get_keys()
     print("Keys:", keys)
