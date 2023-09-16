@@ -74,6 +74,10 @@ $$
 When a solution where $x$ and $y$ are whole numbers is fund, we can now find $p$ and $q$
 
 $$
-n = (x+y)(x-y) = p\cdot q \Rightarrow p = x+y \wedge q = x-y
+n = (x+y)(x-y) = p\cdot q 
+$$
+
+$$
+\Rightarrow p = x+y \wedge q = x-y
 $$
 
